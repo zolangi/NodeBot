@@ -19,10 +19,19 @@ var connector = new builder.ChatConnector({
 var bot = new builder.UniversalBot(connector);
 server.post('/api/messages', connector.listen());
 
-bot.dialog('/', [function(session){
-	//anytime you connect to a bot it saves any information you want to save from the user
+var intents = new builder.IntentDialog();
+bot.dialog('/', intents);
+
+intents.onDefault('/', [
+	  function(session){
+	      //anytime you connect to a bot it saves any information you want to save from the user
 	    //	session.beginDialog('/profile');
-	    function
+	      if(!session.userData.name){
+		  session.beginDialog('/profile');
+	      }
+	      else{
+		  next();
+	      }
 	},
 	function (session, results) {
 	    session.send('Hello %s', session.userData.name); 
