@@ -3,6 +3,7 @@
 var restify = require('restify');
 var builder = require('botbuilder');
 
+
 /*Setting up the bot*/
 
 var server = restify.createServer(); 
@@ -39,12 +40,37 @@ intents.onDefault('/', [
 	}
 );
 
-    bot.dialog('/profile', [
-			    function(session){
-				builder.Prompts.text(session, 'Hi wahts your name?');
-			    },
-			    function(session, results){
-				session.userData.name = results.response;
-				session.endDialog();
-			    }
-			    ]);
+intents.matches(/^change name/i, [
+       	    function (session) {
+       	       	session.beginDialog('/profile');
+	        },
+	    function (session, results) {
+	       	session.send('Ok... Changed your name to %s', session.userData.name);
+	        }
+]);
+
+intents.matches(/^hero card/i, [
+       	   function (session, results) {
+	            var card = createHeroCard(session);
+	            var msg = new builder.Message(session).addAttachment(card);
+		    session.send(msg);    }
+]);
+
+
+bot.dialog('/unityQnA', basicQnAMakerDialog);
+bot.dialog('/profile', [      
+       	  function (session) {
+       	      builder.Prompts.text(session, 'Hi! What is your name?');
+       	  },
+       	  function (session, results) {
+       	      session.userData.name = results.response;
+       	      session.endDialog();
+       	  }
+]);
+
+function createHeroCard(session) {
+         return new builder.HeroCard(session).title('BotFramework Hero Card').subtitle('Your bots — wherever your users are talking')
+			  .text('Build and connect intelligent bots to interact with your users naturally wherever they are, from text/sms to Skype, Slack, Office 365 mail and other popular services.')
+			  .images([builder.CardImage.create(session, 'https://sec.ch9.ms/ch9/7ff5/e07cfef0-aa3b-40bb-9baa-7c9ef8ff7ff5/buildreactionbotframework_960.jpg')])
+			  .buttons([builder.CardAction.openUrl(session, 'https://docs.botframework.com/en-us/', 'Get Started')]);
+}
