@@ -2,6 +2,7 @@
 //libraries i want to use
 var restify = require('restify');
 var builder = require('botbuilder');
+var cognitiveservices = require('botbuilder-cognitiveservices');
 
 
 /*Setting up the bot*/
@@ -51,11 +52,19 @@ intents.matches(/^change name/i, [
 
 intents.matches(/^hero card/i, [
        	   function (session, results) {
-	            var card = createHeroCard(session);
-	            var msg = new builder.Message(session).addAttachment(card);
-		    session.send(msg);    }
+                var card = createHeroCard(session);
+                var msg = new builder.Message(session).addAttachment(card);
+		session.send(msg);    }
 ]);
 
+intents.matches(/^unity/i, [
+           function (session) { 
+       	        builder.Prompts.text(session, 'Hi! What is your question for unity?');
+           },
+           function (session) {
+	        session.beginDialog('/unityQnA');
+           }
+]);
 
 bot.dialog('/unityQnA', basicQnAMakerDialog);
 bot.dialog('/profile', [      
