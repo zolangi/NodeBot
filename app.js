@@ -21,6 +21,15 @@ var connector = new builder.ChatConnector({
 var bot = new builder.UniversalBot(connector);
 server.post('/api/messages', connector.listen());
 
+var recognizer = new cognitiveservices.QnAMakerRecognizer({
+	knowledgeBaseId: '1574e2a6-2c1b-402b-b19f-a1f07aac2a87', 
+	subscriptionKey: '9473ace59e274c709e19ec44485f2895'});
+
+var basicQnAMakerDialog = new cognitiveservices.QnAMakerDialog({ 
+	recognizers: [recognizer],
+	defaultMessage: 'No match! Try changing the query terms!',
+	qnaThreshold: 0.3});
+
 var intents = new builder.IntentDialog();
 bot.dialog('/', intents);
 
@@ -38,7 +47,7 @@ intents.onDefault('/', [
 	function (session, results) {
 	    session.send('Hello %s', session.userData.name); 
 	    
-	}
+	}]
 );
 
 intents.matches(/^change name/i, [
@@ -64,6 +73,19 @@ intents.matches(/^unity/i, [
            function (session) {
 	        session.beginDialog('/unityQnA');
            }
+]);
+
+intents.onDefault([
+	   function (session, args, next) {
+                if (!session.userData.name) {
+       		   session.beginDialog('/profile');
+       	        } else {
+	       	   next();
+	        }
+          },
+       	   function (session, results) {
+       	       session.send('Hello %s!', session.userData.name);
+       	   }
 ]);
 
 bot.dialog('/unityQnA', basicQnAMakerDialog);
